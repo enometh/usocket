@@ -1,0 +1,24 @@
+(in-package "CL-USER")
+(defvar *usocket-iolib-source-dir*
+  (merge-pathnames "usocket-iolib/" (translate-logical-pathname "EXTERN:")))
+
+(defvar *usocket-iolib-binary-dir* (binary-directory *usocket-iolib-source-dir*))
+
+(pushnew :usocket-iolib *features*)
+
+(mk:defsystem :usocket-iolib
+  :source-pathname *usocket-iolib-source-dir*
+  :binary-pathname *usocket-iolib-binary-dir*
+  :source-extension "lisp"
+  :depends-on (:split-sequence :iolib)
+  :components ((:file "package")
+	       (:module "vendor" :depends-on ("package")
+		:components (#+mcl (:file "kqueue")
+				   #+mcl (:file "OpenTransportUDP")))
+	       (:file "usocket" :depends-on ("vendor"))
+	       (:file "condition" :depends-on ("usocket"))
+	       (:module "backend" :depends-on ("condition")
+		:components ((:file "iolib")))))
+
+#+nil
+(mk:oos :usocket-iolib :load :compile-during-load t)
