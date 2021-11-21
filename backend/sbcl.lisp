@@ -367,6 +367,8 @@ happen. Use with care."
                        local-host local-port
 		       &aux
 		       (sockopt-tcp-nodelay-p
+;;			#+mkcl nil	;;madhu 211120 mkcl's implementation goes through SOL_SOCKET instead of IPPROTO_TCP and is busted
+;;			#-mkcl
 			(fboundp 'sb-bsd-sockets::sockopt-tcp-nodelay)))
   (when deadline (unsupported 'deadline 'socket-connect))
   #+(or ecl mkcl clasp)
