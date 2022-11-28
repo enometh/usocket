@@ -367,8 +367,8 @@ happen. Use with care."
                        local-host local-port
 		       &aux
 		       (sockopt-tcp-nodelay-p
-;;			#+mkcl nil	;;madhu 211120 mkcl's implementation goes through SOL_SOCKET instead of IPPROTO_TCP and is busted
-;;			#-mkcl
+			#+mkcl nil	;;madhu 211120 mkcl's implementation goes through SOL_SOCKET instead of IPPROTO_TCP and is busted
+			#-mkcl
 			(fboundp 'sb-bsd-sockets::sockopt-tcp-nodelay)))
   (when deadline (unsupported 'deadline 'socket-connect))
   #+(or ecl mkcl clasp)
@@ -409,6 +409,9 @@ happen. Use with care."
               ;; connected, it gets a misleading name so supply a
               ;; dummy value to start with.
               (setf usocket (make-stream-socket :socket socket :stream *dummy-stream*))
+
+	      #+mkcl
+	      (assert (not sockopt-tcp-nodelay-p))
               ;; binghe: use SOCKOPT-TCP-NODELAY as internal symbol
               ;;         to pass compilation on ECL without it.
               (when (and nodelay-specified sockopt-tcp-nodelay-p)
