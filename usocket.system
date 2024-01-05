@@ -36,9 +36,12 @@
   :components ((:file "package")
 	       (:module "vendor"
 		:depends-on ("package")
-		:if-feature :mcl
-		:components ((:file "kqueue")
-			     (:file "OpenTransportUDP")))
+		:components ((:file "kqueue"
+			      :if-feature :mcl
+			      )
+			     (:file "OpenTransportUDP"
+			     :if-feature :mcl
+			      )))
 	       (:file "usocket"
 		:depends-on ("vendor"))
 	       (:file "condition"
