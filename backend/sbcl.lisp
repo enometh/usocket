@@ -487,7 +487,7 @@ happen. Use with care."
 ;;	      (assert (not sockopt-tcp-nodelay-p))
               ;; binghe: use SOCKOPT-TCP-NODELAY as internal symbol
               ;;         to pass compilation on ECL without it.
-              (when (and nodelay sockopt-tcp-nodelay-p)
+              (when (and nodelay sockopt-tcp-nodelay-p (not (pathnamep host)))
                 (setf (sb-bsd-sockets::sockopt-tcp-nodelay socket) nodelay))
               (when (or local-host local-port)
                 (sb-bsd-sockets:socket-bind socket
