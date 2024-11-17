@@ -32,6 +32,7 @@
 				:clasp)
 			  (:not :usocket-iolib))
 		:sb-bsd-sockets)
+		"babel"
 	       (:feature :usocket-iolib :iolib))
   :components ((:file "package")
 	       (:module "vendor"
