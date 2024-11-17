@@ -1152,3 +1152,26 @@ happen. Use with care."
            (sb-bsd-sockets::socket-error 'wait-for-input-internal))))))
 
 ) ; progn
+
+
+;;; ----------------------------------------------------------------------
+;;; ;madhu 241117
+;;; try to allow `sendto' and `recvfrom' on unix domain socketsb
+;;;
+
+(defmethod socket-send ((usocket usocket) buffer size &key host port (offset 0))
+  (let ((remote (when host
+                  (car (get-hosts-by-name (host-to-hostname host))))))
+    (with-mapped-conditions (usocket host)
+      (let* ((s (socket usocket))
+             (dest (if (and host port) (list remote port) nil))
+             (real-buffer (if (zerop offset)
+                              buffer
+                              (subseq buffer offset (+ offset size)))))
+        (sb-bsd-sockets:socket-send s real-buffer size :address dest)))))
+
+(defmethod socket-receive ((usocket usocket) buffer length
+                           &key (element-type '(unsigned-byte 8)))
+  (with-mapped-conditions (usocket)
+    (let ((s (socket usocket)))
+      (sb-bsd-sockets:socket-receive s buffer length :element-type element-type))))
