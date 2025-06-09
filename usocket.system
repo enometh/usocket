@@ -34,7 +34,9 @@
 		:sb-bsd-sockets)
 		"babel"
 	       (:feature :usocket-iolib :iolib))
-  :components ((:file "package")
+  :components ((:file "ensure-ctf")
+	       (:file "check-ctf")
+	       (:file "package")
 	       (:module "vendor"
 		:depends-on ("package")
 		:components ((:file "kqueue"
