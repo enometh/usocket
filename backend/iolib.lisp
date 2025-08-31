@@ -332,6 +332,18 @@ Backtrace:
 ;; the calls on USOCKET:USOCKET-DATAGRAM objects will be dispacted as
 ;; usual to that method.
 
+(defmacro with-ewouldblock-handled (&body body)
+  `(handler-bind ((iolib/syscalls:ewouldblock
+		   (lambda (c)
+		     (let ((r (find-restart 'iolib/sockets:retry-syscall c)))
+		       (cond (r
+			      (format t "ewouldblock handled~%")
+			      (invoke-restart r))
+			     (t (format t "ewouldblock: no restart!~%")))))))
+     ,@body))
+
+(defmacro with-ewouldblock-handled (&body body) `(progn ,@body))
+
 (defmethod socket-send ((usocket usocket) buffer size &key host port (offset 0))
   (let* ((buffer (etypecase buffer
 		   (string
@@ -344,16 +356,21 @@ Backtrace:
 				:initial-contents buffer))))
 	 (size (or size	;; better be coerrect, we expect nil
 		   (length buffer))))
-    (apply #'iolib/sockets:send-to
-	   `(,(socket usocket) ,buffer :start ,offset :end ,(+ offset size)
-	      ,@(when (and host port)
-		  `(:remote-host ,(iolib/sockets:ensure-hostname host)
-		    :remote-port ,port))))))
+    (with-ewouldblock-handled
+      (apply #'iolib/sockets:send-to
+	     `(,(socket usocket) ,buffer :start ,offset :end ,(+ offset size)
+		:dont-wait t
+		,@(when (and host port)
+		    `(:remote-host ,(iolib/sockets:ensure-hostname host)
+		      :remote-port ,port)))))))
 
 (defmethod socket-receive ((usocket usocket) buffer length &key start end)
   (multiple-value-bind (buffer size host port)
-      (iolib/sockets:receive-from (socket usocket)
-				  :buffer buffer :size (or length (length buffer))
-				  :start (or start 0)
-				  :end (or end (length buffer)))
+      (with-ewouldblock-handled
+	(iolib/sockets:receive-from (socket usocket)
+				    :buffer buffer :size (or length (length buffer))
+				    :start (or start 0)
+				    :end (or end (length buffer))
+				    :dont-wait t
+				    ))
     (values buffer size (if host (iolib-vector-to-vector-quad host)) port)))
