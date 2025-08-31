@@ -1157,7 +1157,7 @@ happen. Use with care."
 
 ;;; ----------------------------------------------------------------------
 ;;; ;madhu 241117
-;;; try to allow `sendto' and `recvfrom' on unix domain socketsb
+;;; try to allow `sendto' and `recvfrom' on unix domain sockets
 ;;;
 
 (defmethod socket-send ((usocket usocket) buffer size &key host port (offset 0))
@@ -1178,8 +1178,9 @@ happen. Use with care."
       (multiple-value-bind (buf len peer)
 	  (sb-bsd-sockets:socket-receive s buffer length :element-type element-type)
 	(declare (ignore peer))
+	(assert (eql buf buffer))
 	(values
-	 (cond ((= (length buf) len)
+	 #|| (cond ((= (length buf) len)
 		buf)
-	       (t (subseq buf 0 len)))
-	 len)))))
+		(t (subseq buf 0 len)))	||#
+	 buffer	len)))))
