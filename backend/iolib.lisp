@@ -344,6 +344,16 @@ Backtrace:
 
 (defmacro with-ewouldblock-handled (&body body) `(progn ,@body))
 
+(defun maybe-pinned-array (array)
+  #+lispworks
+  (make-array (length array)
+	      #+lispworks :allocation
+	      #+lispworks :pinnable
+	      :element-type '(unsigned-byte 8)
+	      :initial-contents array)
+  #-lispworks
+  array)
+
 (defmethod socket-send ((usocket usocket) buffer size &key host port (offset 0))
   (let* ((buffer (etypecase buffer
 		   (string
@@ -356,6 +366,8 @@ Backtrace:
 				:initial-contents buffer))))
 	 (size (or size	;; better be coerrect, we expect nil
 		   (length buffer))))
+    #+lispworks
+    (setq buffer (maybe-pinned-array buffer))
     (with-ewouldblock-handled
       (apply #'iolib/sockets:send-to
 	     `(,(socket usocket) ,buffer :start ,offset :end ,(+ offset size)
@@ -364,6 +376,7 @@ Backtrace:
 		    `(:remote-host ,(iolib/sockets:ensure-hostname host)
 		      :remote-port ,port)))))))
 
+;; lispworks8 requires buffer to be :pinnable
 (defmethod socket-receive ((usocket usocket) buffer length &key start end)
   (multiple-value-bind (buffer size host port)
       (with-ewouldblock-handled
@@ -371,6 +384,7 @@ Backtrace:
 				    :buffer buffer :size (or length (length buffer))
 				    :start (or start 0)
 				    :end (or end (length buffer))
+;; ???
 				    :dont-wait t
 				    ))
     (values buffer size (if host (iolib-vector-to-vector-quad host)) port)))
