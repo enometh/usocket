@@ -342,6 +342,7 @@ Backtrace:
 			     (t (format t "ewouldblock: no restart!~%")))))))
      ,@body))
 
+#+nil
 (defmacro with-ewouldblock-handled (&body body) `(progn ,@body))
 
 (defun maybe-pinned-array (array)
