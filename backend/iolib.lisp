@@ -386,6 +386,6 @@ Backtrace:
 				    :start (or start 0)
 				    :end (or end (length buffer))
 ;; ???
-				    :dont-wait t
+#-ccl				    :dont-wait #-ccl t
 				    ))
     (values buffer size (if host (iolib-vector-to-vector-quad host)) port)))
