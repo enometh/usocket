@@ -39,6 +39,11 @@
 	  (t
 	   (net:parse-host host)))))
 
+(defvar *genera-tcp-stream-translation* nil
+  ":translation parameter to make-tcp-stream. usually :unix or :ascii or
+NIL (default). If http:lispm;tcp-lispm-stream patch is loaded, you can
+this can also be :modal.")
+
 (defun element-type-to-format (element-type protocol)
   (cond ((null element-type)
 	 (ecase protocol
@@ -82,6 +87,7 @@
 	       (stream (tcp:open-tcp-stream host-object port local-port
 					    :characters characters
 					    :ascii-translation characters
+					    :translation *genera-tcp-stream-translation*
 					    :timeout timeout))
 	       (gs (make-instance 'genera-stream-socket
 				  :stream stream)))
